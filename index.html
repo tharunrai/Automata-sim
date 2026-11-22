@@ -1,0 +1,1581 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Automata Lab — ATC Simulators</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #11182c;
+      --panel2: #172038;
+      --line: #243052;
+      --text: #e7eaf3;
+      --muted: #8a94b2;
+      --acc: #22d3ee;
+      --acc2: #a78bfa;
+      --ok: #34d399;
+      --bad: #f87171;
+      --warn: #fbbf24;
+      --node: #172038;
+      --nodeStroke: #5b6b95;
+      --edge: #7f8db5;
+      --chip: #1b2542;
+      --r0: #f87171;
+      --r1: #fb923c;
+      --r2: #fbbf24;
+      --r3: #a3e635;
+      --r4: #22d3ee;
+      --r5: #a78bfa;
+      --mono: ui-monospace, "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+      --sans: Inter, "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+    }
+
+    [data-theme=light] {
+      --bg: #f3f5fb;
+      --panel: #ffffff;
+      --panel2: #f6f8fd;
+      --line: #dde3f0;
+      --text: #141a2e;
+      --muted: #5d6785;
+      --acc: #0891b2;
+      --acc2: #7c3aed;
+      --ok: #059669;
+      --bad: #dc2626;
+      --warn: #b45309;
+      --node: #ffffff;
+      --nodeStroke: #64748b;
+      --edge: #64748b;
+      --chip: #eef2fa;
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    html,
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 14px;
+      line-height: 1.5
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+      color: inherit
+    }
+
+    code,
+    .mono {
+      font-family: var(--mono)
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 270px 1fr;
+      min-height: 100vh
+    }
+
+    /* sidebar */
+    .side {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      background: var(--panel);
+      border-right: 1px solid var(--line);
+      padding: 22px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px
+    }
+
+    .brand {
+      display: flex;
+      gap: 12px;
+      align-items: center
+    }
+
+    .logo {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font: 700 22px var(--mono);
+      color: #0b1020;
+      background: linear-gradient(135deg, var(--acc), var(--acc2))
+    }
+
+    .brand b {
+      display: block;
+      font-size: 16px
+    }
+
+    .brand small {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .06em
+    }
+
+    nav {
+      display: flex;
+      flex-direction: column;
+      gap: 6px
+    }
+
+    nav button {
+      all: unset;
+      cursor: pointer;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      transition: .15s
+    }
+
+    nav button:hover {
+      background: var(--panel2)
+    }
+
+    nav button.active {
+      background: var(--panel2);
+      border-color: var(--line);
+      box-shadow: inset 3px 0 0 var(--acc)
+    }
+
+    nav .n {
+      font: 600 12px var(--mono);
+      color: var(--acc);
+      padding-top: 2px
+    }
+
+    nav b {
+      display: block;
+      font-size: 14px
+    }
+
+    nav small {
+      color: var(--muted);
+      font-size: 12px
+    }
+
+    .side-foot {
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px
+    }
+
+    .side-foot small {
+      color: var(--muted);
+      font-size: 11px;
+      text-align: center
+    }
+
+    /* main */
+    main {
+      padding: 28px 32px 60px;
+      max-width: 1280px;
+      width: 100%
+    }
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      align-items: flex-end;
+      margin-bottom: 22px;
+      flex-wrap: wrap
+    }
+
+    .eyebrow {
+      font: 600 11px var(--mono);
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--acc)
+    }
+
+    h1 {
+      margin: 6px 0 6px;
+      font-size: 30px;
+      letter-spacing: -.02em
+    }
+
+    .top p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 720px
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 8px
+    }
+
+    .grid {
+      display: grid;
+      gap: 18px;
+      margin-bottom: 18px
+    }
+
+    .g2 {
+      grid-template-columns: 1fr 1fr
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 18px;
+      min-width: 0
+    }
+
+    .grid>.card {
+      margin-bottom: 0
+    }
+
+    .card-h {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap
+    }
+
+    .card h2 {
+      margin: 0;
+      font-size: 17px;
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .card h3 {
+      margin: 16px 0 8px;
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 600
+    }
+
+    .num {
+      display: inline-grid;
+      place-items: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 7px;
+      background: var(--chip);
+      color: var(--acc);
+      font: 700 12px var(--mono)
+    }
+
+    .pill {
+      font: 12px var(--mono);
+      color: var(--muted);
+      background: var(--chip);
+      border: 1px solid var(--line);
+      padding: 3px 10px;
+      border-radius: 99px
+    }
+
+    .btn {
+      cursor: pointer;
+      border: 1px solid var(--line);
+      background: var(--chip);
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-weight: 600;
+      white-space: nowrap;
+      transition: .15s
+    }
+
+    .btn:hover {
+      border-color: var(--acc)
+    }
+
+    .btn.pri {
+      background: linear-gradient(135deg, var(--acc), var(--acc2));
+      color: #0b1020;
+      border: none
+    }
+
+    .btn.sm {
+      padding: 5px 10px;
+      font-size: 12px
+    }
+
+    .lbl {
+      display: block;
+      font: 600 11px var(--mono);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 16px 0 8px
+    }
+
+    .row {
+      display: flex;
+      gap: 8px
+    }
+
+    input,
+    select {
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px 11px;
+      min-width: 0;
+      outline: none
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--acc)
+    }
+
+    .row input {
+      flex: 1
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      background: var(--chip);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 3px 4px 3px 10px;
+      font-family: var(--mono);
+      font-size: 13px
+    }
+
+    .chip button {
+      all: unset;
+      cursor: pointer;
+      width: 22px;
+      height: 22px;
+      display: grid;
+      place-items: center;
+      border-radius: 6px;
+      color: var(--muted);
+      font-size: 12px
+    }
+
+    .chip button:hover {
+      background: var(--panel2);
+      color: var(--text)
+    }
+
+    .chip.is-start {
+      border-color: var(--acc)
+    }
+
+    .chip.is-start .b-start {
+      color: var(--acc)
+    }
+
+    .chip.is-final .b-final {
+      color: var(--acc2)
+    }
+
+    .chip.is-final {
+      box-shadow: inset 0 0 0 1px var(--acc2)
+    }
+
+    .chip.fixed {
+      padding-right: 10px;
+      color: var(--acc2)
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 12px;
+      margin: 8px 0 0
+    }
+
+    .trrow {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto 1fr auto;
+      gap: 8px;
+      align-items: center
+    }
+
+    .trrow span {
+      color: var(--muted);
+      font-family: var(--mono)
+    }
+
+    .trlist {
+      margin-top: 10px;
+      max-height: 220px;
+      overflow: auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 6px
+    }
+
+    .tr {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      padding: 4px 4px 4px 10px;
+      font-size: 12.5px
+    }
+
+    .tr button {
+      all: unset;
+      cursor: pointer;
+      color: var(--muted);
+      width: 22px;
+      text-align: center
+    }
+
+    .tr button:hover {
+      color: var(--bad)
+    }
+
+    .msg {
+      padding: 9px 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-bottom: 6px;
+      border: 1px solid
+    }
+
+    .msg.err {
+      color: var(--bad);
+      border-color: color-mix(in srgb, var(--bad) 40%, transparent);
+      background: color-mix(in srgb, var(--bad) 10%, transparent)
+    }
+
+    .msg.warn {
+      color: var(--warn);
+      border-color: color-mix(in srgb, var(--warn) 40%, transparent);
+      background: color-mix(in srgb, var(--warn) 10%, transparent)
+    }
+
+    .msg.ok {
+      color: var(--ok);
+      border-color: color-mix(in srgb, var(--ok) 40%, transparent);
+      background: color-mix(in srgb, var(--ok) 10%, transparent)
+    }
+
+    .def {
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-family: var(--mono);
+      font-size: 13px
+    }
+
+    .def .k {
+      color: var(--acc2)
+    }
+
+    .def .v {
+      color: var(--acc)
+    }
+
+    .def .dl {
+      max-height: 180px;
+      overflow: auto;
+      border-top: 1px dashed var(--line);
+      margin-top: 8px;
+      padding-top: 8px;
+      columns: 2;
+      column-gap: 20px
+    }
+
+    .tbl {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--mono);
+      font-size: 13px
+    }
+
+    .tbl th,
+    .tbl td {
+      border-bottom: 1px solid var(--line);
+      padding: 7px 10px;
+      text-align: left
+    }
+
+    .tbl thead th {
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: .08em;
+      text-transform: uppercase
+    }
+
+    .tbl tbody th {
+      color: var(--text)
+    }
+
+    .tbl .mk {
+      color: var(--acc);
+      margin-right: 4px
+    }
+
+    .tbl .mf {
+      color: var(--acc2);
+      margin-right: 4px
+    }
+
+    .tblwrap {
+      overflow: auto
+    }
+
+    .stats {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap
+    }
+
+    .stat {
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 14px
+    }
+
+    .stat b {
+      display: block;
+      font: 700 20px var(--mono)
+    }
+
+    .stat small {
+      color: var(--muted);
+      font-size: 11px
+    }
+
+    .stat.arrow {
+      background: none;
+      border: none;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      padding: 0 2px
+    }
+
+    /* graphs */
+    .gwrap {
+      user-select: none;
+      -webkit-user-select: none;
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative
+    }
+
+    .gwrap svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      touch-action: none;
+      background-image: radial-gradient(color-mix(in srgb, var(--line) 70%, transparent) 1px, transparent 1px);
+      background-size: 22px 22px
+    }
+
+    .node {
+      cursor: grab
+    }
+
+    .node:active {
+      cursor: grabbing
+    }
+
+    .ncirc {
+      fill: var(--node);
+      stroke: var(--nodeStroke);
+      stroke-width: 1.6
+    }
+
+    .node.start .ncirc {
+      stroke: var(--acc);
+      stroke-width: 2.2
+    }
+
+    .nfin {
+      fill: none;
+      stroke: var(--acc2);
+      stroke-width: 1.6
+    }
+
+    .ntext {
+      fill: var(--text);
+      font: 600 12px var(--mono);
+      text-anchor: middle;
+      dominant-baseline: central;
+      pointer-events: none
+    }
+
+    .edge {
+      stroke: var(--edge);
+      stroke-width: 1.5;
+      fill: none
+    }
+
+    .ahead {
+      fill: var(--edge)
+    }
+
+    .sarrow {
+      stroke: var(--acc);
+      stroke-width: 2
+    }
+
+    .sahead {
+      fill: var(--acc)
+    }
+
+    .elabel {
+      fill: var(--acc);
+      font: 600 12px var(--mono);
+      text-anchor: middle;
+      dominant-baseline: central;
+      paint-order: stroke;
+      stroke: var(--panel2);
+      stroke-width: 5px;
+      stroke-linejoin: round
+    }
+
+    .empty {
+      color: var(--muted);
+      text-align: center;
+      padding: 40px 10px;
+      font-family: var(--mono);
+      font-size: 13px
+    }
+
+    /* stepper */
+    .stepper {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap
+    }
+
+    .stepper .count {
+      font: 12px var(--mono);
+      color: var(--muted);
+      margin-left: 6px
+    }
+
+    .steps {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      counter-reset: s;
+      display: flex;
+      flex-direction: column;
+      gap: 8px
+    }
+
+    .steps>li {
+      counter-increment: s;
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 14px 10px 50px;
+      position: relative;
+      font-size: 13.5px
+    }
+
+    .steps>li::before {
+      content: counter(s);
+      position: absolute;
+      left: 12px;
+      top: 10px;
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: var(--chip);
+      color: var(--acc);
+      font: 700 12px var(--mono)
+    }
+
+    .steps>li.hidden {
+      display: none
+    }
+
+    .steps>li.current {
+      border-color: var(--acc);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--acc) 15%, transparent)
+    }
+
+    .steps code {
+      background: var(--chip);
+      padding: 1px 6px;
+      border-radius: 6px;
+      font-size: 12.5px
+    }
+
+    .badge {
+      display: inline-block;
+      font: 700 10px var(--mono);
+      letter-spacing: .06em;
+      padding: 2px 7px;
+      border-radius: 99px;
+      margin-left: 6px;
+      vertical-align: middle
+    }
+
+    .badge.new {
+      background: color-mix(in srgb, var(--ok) 18%, transparent);
+      color: var(--ok)
+    }
+
+    .badge.old {
+      background: var(--chip);
+      color: var(--muted)
+    }
+
+    .plist {
+      margin: 6px 0 0;
+      padding-left: 18px;
+      list-style: disc;
+      color: var(--muted);
+      font-size: 12.5px
+    }
+
+    .plist code {
+      color: var(--text)
+    }
+
+    /* triangle */
+    .tri {
+      border-collapse: separate;
+      border-spacing: 4px;
+      font-family: var(--mono);
+      font-size: 12.5px;
+      margin: 0 auto
+    }
+
+    .tri th {
+      color: var(--muted);
+      font-weight: 600;
+      padding: 4px 8px
+    }
+
+    .tri td {
+      width: 46px;
+      height: 38px;
+      text-align: center;
+      border-radius: 8px;
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      cursor: default
+    }
+
+    .tri td.blank {
+      background: none;
+      border: none
+    }
+
+    .tri td.x {
+      color: #0b1020;
+      font-weight: 700;
+      border: none
+    }
+
+    .tri td.x sub {
+      font-size: 9px;
+      opacity: .75
+    }
+
+    .tri td.eq {
+      color: var(--ok);
+      font-weight: 700;
+      border-color: var(--ok)
+    }
+
+    .legend {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 12px;
+      font: 11px var(--mono);
+      color: var(--muted)
+    }
+
+    .legend i {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 4px;
+      vertical-align: -2px;
+      margin-right: 4px
+    }
+
+    .classes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px
+    }
+
+    .cls {
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 6px 12px;
+      font-family: var(--mono)
+    }
+
+    .cls.merged {
+      border-color: var(--acc2);
+      color: var(--acc2)
+    }
+
+    .prow {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+      font-family: var(--mono);
+      font-size: 12.5px
+    }
+
+    .prow .pl {
+      color: var(--muted);
+      min-width: 34px
+    }
+
+    .prow .pg {
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 3px 9px
+    }
+
+    /* tests */
+    .res-ok {
+      color: var(--ok);
+      font-weight: 700
+    }
+
+    .res-bad {
+      color: var(--bad);
+      font-weight: 700
+    }
+
+    .trace {
+      color: var(--muted);
+      font-size: 12px;
+      word-break: break-word
+    }
+
+    details {
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 16px
+    }
+
+    details summary {
+      cursor: pointer;
+      font-weight: 600
+    }
+
+    details ol {
+      margin: 10px 0 4px;
+      padding-left: 20px;
+      color: var(--muted)
+    }
+
+    details li {
+      margin-bottom: 6px
+    }
+
+    details b {
+      color: var(--text)
+    }
+
+    @media (max-width:980px) {
+      .app {
+        grid-template-columns: 1fr
+      }
+
+      .side {
+        position: static;
+        height: auto;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center
+      }
+
+      nav {
+        flex-direction: row;
+        flex-wrap: wrap
+      }
+
+      .side-foot {
+        margin: 0
+      }
+
+      .g2 {
+        grid-template-columns: 1fr
+      }
+
+      main {
+        padding: 20px 16px
+      }
+
+      .trrow {
+        grid-template-columns: 1fr 1fr 1fr;
+      }
+
+      .trrow span {
+        display: none
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <aside class="side">
+      <div class="brand">
+        <div class="logo">δ</div>
+        <div><b>Automata Lab</b><small>ATC SIMULATORS</small></div>
+      </div>
+      <nav id="nav">
+        <button data-tool="min"><span class="n">01</span><span><b>DFA Minimization</b><small>Table-filling · partition
+              refinement</small></span></button>
+        <button data-tool="nfa"><span class="n">02</span><span><b>NFA → DFA</b><small>Subset
+              construction</small></span></button>
+        <button data-tool="enfa"><span class="n">03</span><span><b>ε-NFA → DFA</b><small>Subset construction with
+              ε-closures</small></span></button>
+      </nav>
+      <div class="side-foot">
+        <button class="btn" id="themeBtn">☀ Light mode</button>
+        <small>Works offline · no install needed</small>
+      </div>
+    </aside>
+    <main id="main"></main>
+  </div>
+
+  <script>
+    "use strict";
+    const EPS = "ε";
+    const SEP = "\u0001";
+    const K = (q, a) => q + SEP + a;
+    const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+    /* ---------------- Tools & examples ---------------- */
+    const TOOLS = {
+      min: {
+        no: "01", mode: "dfa", inName: "DFA", title: "DFA Minimization", outName: "Minimal DFA",
+        desc: "Build a DFA, remove unreachable states, find equivalent states with the table-filling (Myhill–Nerode) method, cross-check with partition refinement, and get the minimal equivalent DFA."
+      },
+      nfa: {
+        no: "02", mode: "nfa", inName: "NFA", title: "NFA → DFA Conversion", outName: "Equivalent DFA",
+        desc: "Build a non-deterministic finite automaton and convert it into an equivalent DFA using subset construction, generating only the reachable subsets of NFA states."
+      },
+      enfa: {
+        no: "03", mode: "enfa", inName: "ε-NFA", title: "ε-NFA → DFA Conversion", outName: "Equivalent DFA",
+        desc: "Build an NFA with ε-moves, compute the ε-closure of every state, and convert it into an equivalent DFA using subset construction on ε-closures."
+      }
+    };
+    function mk(states, alphabet, start, finals, edges) {
+      const m = { states: [...states], alphabet: [...alphabet], start, finals: new Set(finals), trans: {} };
+      edges.forEach(([p, a, q]) => (m.trans[K(p, a)] ??= new Set()).add(q));
+      return m;
+    }
+    const EX = {
+      min: () => mk(["q0", "q1", "q2", "q3", "q4", "q5"], ["a", "b"], "q0", ["q4"], [
+        ["q0", "a", "q1"], ["q0", "b", "q2"], ["q1", "a", "q1"], ["q1", "b", "q3"], ["q2", "a", "q1"], ["q2", "b", "q2"],
+        ["q3", "a", "q1"], ["q3", "b", "q4"], ["q4", "a", "q1"], ["q4", "b", "q2"], ["q5", "a", "q3"], ["q5", "b", "q5"]]),
+      nfa: () => mk(["A", "B", "C"], ["0", "1"], "A", ["C"], [
+        ["A", "0", "A"], ["A", "1", "A"], ["A", "0", "B"], ["B", "1", "C"]]),
+      enfa: () => mk(["q0", "q1", "q2"], ["a", "b"], "q0", ["q2"], [
+        ["q0", "a", "q0"], ["q0", EPS, "q1"], ["q1", "b", "q1"], ["q1", EPS, "q2"], ["q2", "a", "q2"]])
+    };
+    const TESTS = {
+      min: "ε, abb, aabb, babb, ab, ba, abba, bbabb",
+      nfa: "ε, 01, 001, 101, 10, 0110, 11, 1101",
+      enfa: "ε, a, ab, aba, ba, bab, aabbaa, abab"
+    };
+    const S = {};
+    for (const id in TOOLS) S[id] = { m: EX[id](), step: Infinity, pos: {}, tests: TESTS[id], msg: null, sel: {} };
+    let cur = "min";
+
+    /* ---------------- Helpers ---------------- */
+    const symsOf = (m, mode) => mode === "enfa" ? [...m.alphabet, EPS] : [...m.alphabet];
+    const sortSet = (m, set) => [...set].sort((a, b) => m.states.indexOf(a) - m.states.indexOf(b));
+    const setName = arr => arr.length ? "{" + arr.join(",") + "}" : "∅";
+    function edgesOf(m) {
+      const out = [];
+      for (const k in m.trans) { const [p, a] = k.split(SEP); for (const q of m.trans[k]) out.push([p, a, q]); }
+      const o = m.states, al = [...m.alphabet, EPS];
+      return out.sort((x, y) => o.indexOf(x[0]) - o.indexOf(y[0]) || al.indexOf(x[1]) - al.indexOf(y[1]) || o.indexOf(x[2]) - o.indexOf(y[2]));
+    }
+    function uniqName(m, base) { let n = base, i = 1; while (m.states.includes(n)) n = base + (i++); return n; }
+    function eclose(m, set) {
+      const st = [...set], c = new Set(set);
+      while (st.length) { const s = st.pop(), t = m.trans[K(s, EPS)]; if (t) for (const x of t) if (!c.has(x)) { c.add(x); st.push(x); } }
+      return c;
+    }
+
+    /* ---------------- DFA minimization ---------------- */
+    function completeDFA(m) {
+      const seen = new Set();
+      if (m.start) {
+        const q = [m.start]; seen.add(m.start);
+        while (q.length) {
+          const s = q.shift();
+          for (const a of m.alphabet) { const t = m.trans[K(s, a)]; if (t) for (const x of t) if (!seen.has(x)) { seen.add(x); q.push(x); } }
+        }
+      }
+      const order = m.states.filter(s => seen.has(s));
+      const unreachable = m.states.filter(s => !seen.has(s));
+      const d = {}; let trap = null; const missing = [];
+      for (const s of order) for (const a of m.alphabet) {
+        const t = m.trans[K(s, a)];
+        if (t && t.size) d[K(s, a)] = [...t][0];
+        else { trap = trap || uniqName(m, "∅"); d[K(s, a)] = trap; missing.push(`δ(${s},${a})`); }
+      }
+      const states = [...order];
+      if (trap) { states.push(trap); for (const a of m.alphabet) d[K(trap, a)] = trap; }
+      return { states, d, start: m.start, finals: new Set(order.filter(s => m.finals.has(s))), unreachable, trap, missing, alphabet: [...m.alphabet] };
+    }
+    function minimize(m) {
+      if (!m.start || !m.alphabet.length) return null;
+      const D = completeDFA(m), Q = D.states, A = D.alphabet;
+      const idx = Object.fromEntries(Q.map((s, i) => [s, i]));
+      const pk = (x, y) => idx[x] < idx[y] ? x + "|" + y : y + "|" + x;
+      const pairs = [];
+      for (let i = 0; i < Q.length; i++) for (let j = i + 1; j < Q.length; j++) pairs.push([Q[i], Q[j]]);
+      const mark = {}, rounds = [];
+      const r0 = [];
+      for (const [p, q] of pairs) if (D.finals.has(p) !== D.finals.has(q)) {
+        const f = D.finals.has(p) ? p : q, n = f === p ? q : p;
+        mark[pk(p, q)] = { r: 0, why: `${f} is final, ${n} is not` }; r0.push([p, q]);
+      }
+      rounds.push(r0);
+      for (let r = 1; ; r++) {
+        const nw = [];
+        for (const [p, q] of pairs) {
+          if (mark[pk(p, q)]) continue;
+          for (const a of A) {
+            const x = D.d[K(p, a)], y = D.d[K(q, a)];
+            if (x !== y && mark[pk(x, y)] && mark[pk(x, y)].r < r) {
+              nw.push([p, q, `δ(${p},${a}) = ${x}, δ(${q},${a}) = ${y}, and (${x}, ${y}) is already marked`]); break;
+            }
+          }
+        }
+        if (!nw.length) break;
+        for (const [p, q, why] of nw) mark[pk(p, q)] = { r, why };
+        rounds.push(nw.map(([p, q]) => [p, q]));
+      }
+      const parent = Object.fromEntries(Q.map(s => [s, s]));
+      const find = x => parent[x] === x ? x : (parent[x] = find(parent[x]));
+      for (const [p, q] of pairs) if (!mark[pk(p, q)]) parent[find(q)] = find(p);
+      const groups = {}; for (const s of Q) (groups[find(s)] ??= []).push(s);
+      const classes = Object.values(groups).sort((a, b) => idx[a[0]] - idx[b[0]]);
+      // partition refinement
+      let P = [Q.filter(s => D.finals.has(s)), Q.filter(s => !D.finals.has(s))].filter(g => g.length);
+      const prounds = [P];
+      for (; ;) {
+        const gi = {}; P.forEach((g, i) => g.forEach(s => gi[s] = i));
+        const NP = [];
+        for (const g of P) {
+          const by = {};
+          for (const s of g) { const sig = A.map(a => gi[D.d[K(s, a)]]).join(","); (by[sig] ??= []).push(s); }
+          NP.push(...Object.values(by));
+        }
+        if (NP.length === P.length) break;
+        P = NP; prounds.push(P);
+      }
+      const norm = ps => ps.map(g => [...g].sort((a, b) => idx[a] - idx[b]).join(",")).sort().join(" | ");
+      const agree = norm(classes) === norm(P);
+      const cname = c => c.length === 1 ? c[0] : "{" + c.join(",") + "}";
+      const cof = {}; classes.forEach(c => c.forEach(s => cof[s] = cname(c)));
+      const M = {
+        states: classes.map(cname), alphabet: [...A], start: cof[D.start],
+        finals: new Set(classes.filter(c => D.finals.has(c[0])).map(cname)), trans: {}
+      };
+      for (const c of classes) for (const a of A) M.trans[K(cname(c), a)] = new Set([cof[D.d[K(c[0], a)]]]);
+      return { D, pairs, mark, rounds, classes, prounds, agree, M, pk };
+    }
+
+    /* ---------------- Subset construction ---------------- */
+    function subset(m, eps) {
+      if (!m.start || !m.alphabet.length) return null;
+      const cl = s => eps ? eclose(m, s) : new Set(s);
+      const nm = s => setName(sortSet(m, s));
+      const s0 = cl(new Set([m.start]));
+      const map = new Map([[nm(s0), s0]]), queue = [nm(s0)], steps = [], trans = {};
+      while (queue.length) {
+        const n = queue.shift(), set = map.get(n);
+        for (const a of m.alphabet) {
+          const mv = new Set();
+          for (const s of set) { const t = m.trans[K(s, a)]; if (t) t.forEach(x => mv.add(x)); }
+          const u = cl(mv), un = nm(u), isNew = !map.has(un);
+          if (isNew) { map.set(un, u); queue.push(un); }
+          trans[K(n, a)] = new Set([un]);
+          steps.push({ from: n, a, move: nm(mv), to: un, isNew });
+        }
+      }
+      const states = [...map.keys()];
+      const M = {
+        states, alphabet: [...m.alphabet], start: nm(s0),
+        finals: new Set(states.filter(n => [...map.get(n)].some(s => m.finals.has(s)))), trans
+      };
+      const closures = eps ? m.states.map(s => [s, nm(eclose(m, new Set([s])))]) : null;
+      return { M, steps, start: nm(s0), closures, map, eps };
+    }
+
+    /* ---------------- Simulation ---------------- */
+    function tokenize(str, alpha) {
+      str = str.trim();
+      if (str === "" || str === EPS || str === "e" || str === "eps") return [];
+      if (alpha.every(a => a.length === 1)) return [...str.replace(/\s+/g, "")];
+      return str.split(/\s+/);
+    }
+    function simulate(m, eps, tokens) {
+      const cl = s => eps ? eclose(m, s) : s;
+      const show = set => set.size === 1 ? [...set][0] : setName(sortSet(m, set));
+      let curSet = cl(new Set(m.start ? [m.start] : []));
+      const trace = [show(curSet)];
+      for (const tk of tokens) {
+        if (!m.alphabet.includes(tk)) return { ok: false, trace, err: `“${tk}” is not in Σ` };
+        const nx = new Set();
+        for (const s of curSet) { const t = m.trans[K(s, tk)]; if (t) t.forEach(x => nx.add(x)); }
+        curSet = cl(nx); trace.push(show(curSet));
+      }
+      return { ok: [...curSet].some(s => m.finals.has(s)), trace };
+    }
+
+    /* ---------------- Graph drawing ---------------- */
+    const GW = 640, GH = 380;
+    const nodeR = s => Math.max(21, s.length * 3.7 + 11);
+    function layout(m) {
+      const ids = [...m.states];
+      if (m.start && ids.includes(m.start)) { ids.splice(ids.indexOf(m.start), 1); ids.unshift(m.start); }
+      const pos = {}, n = ids.length, cx = GW / 2, cy = GH / 2 + 28;
+      if (n === 1) pos[ids[0]] = { x: cx, y: cy };
+      else if (n === 2) { pos[ids[0]] = { x: cx - 150, y: cy }; pos[ids[1]] = { x: cx + 150, y: cy }; }
+      else {
+        const rx = GW / 2 - 90, ry = GH / 2 - 100;
+        ids.forEach((s, i) => { const t = Math.PI + (2 * Math.PI * i) / n; pos[s] = { x: cx + rx * Math.cos(t), y: cy + ry * Math.sin(t) }; });
+      }
+      return pos;
+    }
+    function getPos(t, key, m) {
+      let pos = t.pos[key];
+      const keys = pos ? Object.keys(pos) : [];
+      if (!pos || keys.length !== m.states.length || m.states.some(s => !pos[s])) pos = t.pos[key] = layout(m);
+      return pos;
+    }
+    function graphInner(t, key, m) {
+      const pos = getPos(t, key, m);
+      const groups = new Map();
+      for (const [p, a, q] of edgesOf(m)) { const g = p + SEP + q; if (!groups.has(g)) groups.set(g, []); groups.get(g).push(a); }
+      let out = `<defs>
+    <marker id="ah-${key}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ahead" d="M0,0 L10,5 L0,10 z"/></marker>
+    <marker id="sh-${key}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="sahead" d="M0,0 L10,5 L0,10 z"/></marker></defs>`;
+      let labels = "";
+      for (const [g, syms] of groups) {
+        const [p, q] = g.split(SEP), A = pos[p], B = pos[q]; if (!A || !B) continue;
+        const label = esc(syms.join(", "));
+        const rp = nodeR(p), rq = nodeR(q);
+        if (p === q) {
+          const x = A.x, y = A.y, r = rp;
+          out += `<path class="edge" marker-end="url(#ah-${key})" d="M${x - r * 0.55},${y - r * 0.83} C${x - r * 1.7},${y - r * 2.9} ${x + r * 1.7},${y - r * 2.9} ${x + r * 0.55},${y - r * 0.86}"/>`;
+          labels += `<text class="elabel" x="${x}" y="${Math.max(12, y - r * 2.35)}">${label}</text>`;
+          continue;
+        }
+        const dx = B.x - A.x, dy = B.y - A.y, dist = Math.hypot(dx, dy) || 1;
+        const nx = -dy / dist, ny = dx / dist;
+        const bidir = groups.has(q + SEP + p);
+        const off = bidir ? 34 : 0;
+        const cxp = (A.x + B.x) / 2 + nx * off, cyp = (A.y + B.y) / 2 + ny * off;
+        const u1x = cxp - A.x, u1y = cyp - A.y, l1 = Math.hypot(u1x, u1y) || 1;
+        const u2x = cxp - B.x, u2y = cyp - B.y, l2 = Math.hypot(u2x, u2y) || 1;
+        const sx = A.x + u1x / l1 * rp, sy = A.y + u1y / l1 * rp;
+        const ex = B.x + u2x / l2 * (rq + 2), ey = B.y + u2y / l2 * (rq + 2);
+        out += `<path class="edge" marker-end="url(#ah-${key})" d="M${sx},${sy} Q${cxp},${cyp} ${ex},${ey}"/>`;
+        const lx = 0.25 * sx + 0.5 * cxp + 0.25 * ex, ly = 0.25 * sy + 0.5 * cyp + 0.25 * ey;
+        const lo = bidir ? 10 : 11;
+        labels += `<text class="elabel" x="${lx + nx * lo}" y="${ly + ny * lo}">${label}</text>`;
+      }
+      out += labels;
+      for (const s of m.states) {
+        const P = pos[s], r = nodeR(s), isStart = s === m.start, isFin = m.finals.has(s);
+        if (isStart) out += `<line class="sarrow" marker-end="url(#sh-${key})" x1="${P.x - r - 38}" y1="${P.y}" x2="${P.x - r - 3}" y2="${P.y}"/>`;
+        out += `<g class="node${isStart ? " start" : ""}" data-g="${key}" data-s="${esc(s)}">
+      <circle class="ncirc" cx="${P.x}" cy="${P.y}" r="${r}"/>${isFin ? `<circle class="nfin" cx="${P.x}" cy="${P.y}" r="${r - 4.5}"/>` : ""}
+      <text class="ntext" x="${P.x}" y="${P.y}">${esc(s)}</text></g>`;
+      }
+      return out;
+    }
+    function graphSVG(t, key, m) {
+      if (!m || !m.states.length) return `<div class="gwrap"><div class="empty">No states yet.</div></div>`;
+      return `<div class="gwrap"><svg id="svg-${key}" viewBox="0 0 ${GW} ${GH}" xmlns="http://www.w3.org/2000/svg">${graphInner(t, key, m)}</svg></div>`;
+    }
+    let drag = null;
+    document.addEventListener("pointerdown", e => {
+      const g = e.target.closest && e.target.closest(".node"); if (!g) return;
+      drag = { key: g.dataset.g, s: g.getAttribute("data-s"), svg: g.ownerSVGElement.id }; e.preventDefault();
+    });
+    document.addEventListener("pointermove", e => {
+      if (!drag) return;
+      const svg = document.getElementById(drag.svg); if (!svg) return;
+      const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+      const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      const t = S[cur], m = drag.key === "in" ? t.m : t._out;
+      const name = [...m.states].find(s => esc(s) === drag.s || s === drag.s);
+      t.pos[drag.key][name] = { x: clamp(p.x, 24, GW - 24), y: clamp(p.y, 24, GH - 24) };
+      svg.innerHTML = graphInner(t, drag.key, m);
+    });
+    document.addEventListener("pointerup", () => drag = null);
+
+    /* ---------------- HTML pieces ---------------- */
+    function defHTML(m, mode) {
+      const nd = mode !== "dfa", syms = symsOf(m, mode);
+      const lines = [];
+      for (const q of m.states) for (const a of syms) {
+        const t = m.trans[K(q, a)];
+        if (!t || !t.size) continue;
+        lines.push(`δ(${esc(q)}, ${esc(a)}) = <span class="v">${esc(nd ? setName(sortSet(m, t)) : [...t][0])}</span>`);
+      }
+      return `<div class="def">
+    <div><span class="k">Q</span> = {${m.states.map(esc).join(", ")}}</div>
+    <div><span class="k">Σ</span> = {${m.alphabet.map(esc).join(", ")}}${mode === "enfa" ? `  <span style="color:var(--muted)">(ε-moves allowed)</span>` : ""}</div>
+    <div><span class="k">q₀</span> = ${esc(m.start ?? "—")}</div>
+    <div><span class="k">F</span> = {${sortSet(m, m.finals).map(esc).join(", ")}}</div>
+    <div style="margin-top:6px"><span class="k">δ</span> : ${nd ? `Q × ${mode === "enfa" ? "(Σ ∪ {ε})" : "Σ"} → 2<sup>Q</sup>` : "Q × Σ → Q"}</div>
+    <div class="dl">${lines.join("<br>") || "<span style='color:var(--muted)'>No transitions yet.</span>"}</div>
+  </div>`;
+    }
+    function tableHTML(m, mode) {
+      if (!m.states.length) return `<div class="empty">No states yet.</div>`;
+      const nd = mode !== "dfa", syms = symsOf(m, mode);
+      return `<div class="tblwrap"><table class="tbl"><thead><tr><th>State</th>${syms.map(a => `<th>${esc(a)}</th>`).join("")}</tr></thead><tbody>
+  ${m.states.map(q => `<tr><th>${q === m.start ? `<span class="mk">→</span>` : ""}${m.finals.has(q) ? `<span class="mf">*</span>` : ""}${esc(q)}</th>
+    ${syms.map(a => { const t = m.trans[K(q, a)]; return `<td>${t && t.size ? esc(nd ? setName(sortSet(m, t)) : [...t][0]) : (nd ? "∅" : "—")}</td>`; }).join("")}</tr>`).join("")}
+  </tbody></table></div><p class="hint"><span style="color:var(--acc)">→</span> start state · <span style="color:var(--acc2)">*</span> final state</p>`;
+    }
+    function builderHTML(t, mode, T) {
+      const m = t.m, syms = symsOf(m, mode);
+      const opt = (arr, sel) => arr.map(x => `<option${x === sel ? " selected" : ""}>${esc(x)}</option>`).join("");
+      return `<section class="card">
+    <div class="card-h"><h2><span class="num">1</span>Build the ${T.inName}</h2><span class="pill">${m.states.length} states · Σ = {${m.alphabet.map(esc).join(", ")}}</span></div>
+    ${t.msg ? `<div class="msg ${t.msg.type}">${esc(t.msg.text)}</div>` : ""}
+    <label class="lbl">States</label>
+    <div class="row"><input id="inState" placeholder="State name, e.g. q0" onkeydown="if(event.key==='Enter')act('addState')"><button class="btn" data-act="addState">+ Add state</button></div>
+    <div class="chips">${m.states.map(s => `<div class="chip state${s === m.start ? " is-start" : ""}${m.finals.has(s) ? " is-final" : ""}">
+      <span>${esc(s)}</span>
+      <button class="b-start" data-act="setStart" data-v="${esc(s)}" title="Make start state">▶</button>
+      <button class="b-final" data-act="toggleFinal" data-v="${esc(s)}" title="Toggle final state">◎</button>
+      <button data-act="delState" data-v="${esc(s)}" title="Delete state">✕</button></div>`).join("")}</div>
+    <p class="hint">▶ set start state · ◎ toggle final (accepting) state · ✕ delete</p>
+    <label class="lbl">Alphabet Σ</label>
+    <div class="row"><input id="inSym" placeholder="Symbol, e.g. a" onkeydown="if(event.key==='Enter')act('addSym')"><button class="btn" data-act="addSym">+ Add symbol</button></div>
+    <div class="chips">${m.alphabet.map(a => `<div class="chip"><span>${esc(a)}</span><button data-act="delSym" data-v="${esc(a)}" title="Delete symbol">✕</button></div>`).join("")}
+      ${mode === "enfa" ? `<div class="chip fixed" title="Built-in empty move">ε (built-in)</div>` : ""}</div>
+    <label class="lbl">Transitions ${mode === "dfa" ? "— one move per (state, symbol)" : "— multiple moves allowed"}</label>
+    <div class="trrow">
+      <select id="trFrom" onchange="S[cur].sel.from=this.value" title="From state">${opt(m.states, t.sel.from)}</select>
+      <select id="trSym" onchange="S[cur].sel.sym=this.value" title="Symbol">${opt(syms, t.sel.sym)}</select>
+      <span>→</span>
+      <select id="trTo" onchange="S[cur].sel.to=this.value" title="To state">${opt(m.states, t.sel.to)}</select>
+      <button class="btn" data-act="addTrans">+ Add</button>
+    </div>
+    <div class="trlist">${edgesOf(m).map(([p, a, q]) => `<div class="tr"><code>δ(${esc(p)}, ${esc(a)}) → ${esc(q)}</code><button data-act="delTrans" data-v="${esc(p + SEP + a + SEP + q)}" title="Delete">✕</button></div>`).join("")}</div>
+  </section>`;
+    }
+    function stepperHTML(n, vis) {
+      return `<div class="stepper">
+    <button class="btn sm" data-act="stepReset">⟲ Reset</button>
+    <button class="btn sm" data-act="stepPrev">◀ Prev</button>
+    <button class="btn sm pri" data-act="stepNext">Next ▶</button>
+    <button class="btn sm" data-act="stepAll">Show all</button>
+    <span class="count">step ${vis} / ${n}</span></div>`;
+    }
+    function stepsList(steps, vis) {
+      return `<ol class="steps">${steps.map((s, i) => `<li class="${i < vis ? "" : "hidden"}${i === vis - 1 ? " current" : ""}">${s}</li>`).join("")}</ol>
+    ${vis === 0 ? `<div class="empty">Press <b>Next ▶</b> to walk through the construction one step at a time.</div>` : ""}`;
+    }
+    const pairStr = ([p, q]) => `(${esc(p)}, ${esc(q)})`;
+
+    function minSteps(R) {
+      const D = R.D, st = [];
+      let s0 = D.unreachable.length
+        ? `<b>Remove unreachable states.</b> BFS from <code>${esc(D.start)}</code> cannot reach <code>${D.unreachable.map(esc).join(", ")}</code>, so ${D.unreachable.length > 1 ? "they are" : "it is"} removed.`
+        : `<b>Remove unreachable states.</b> Every state is reachable from <code>${esc(D.start)}</code>; nothing to remove.`;
+      if (D.trap) s0 += `<br>The DFA is incomplete (missing ${D.missing.map(x => `<code>${esc(x)}</code>`).join(", ")}), so a dead/trap state <code>${esc(D.trap)}</code> is added.`;
+      st.push(s0);
+      R.rounds.forEach((rd, r) => {
+        if (r === 0) st.push(`<b>Round 0 — final vs. non-final.</b> Mark every pair where exactly one state is final: ${rd.length ? rd.length + " pair(s)." : "none."}
+      ${rd.length ? `<ul class="plist">${rd.map(pr => `<li><code>${pairStr(pr)}</code> — ${esc(R.mark[R.pk(...pr)].why)}</li>`).join("")}</ul>` : ""}`);
+        else st.push(`<b>Round ${r}.</b> For each unmarked pair, check whether some symbol leads to an already-marked pair. Newly marked: ${rd.length}.
+      <ul class="plist">${rd.map(pr => `<li><code>${pairStr(pr)}</code> — ${esc(R.mark[R.pk(...pr)].why)}</li>`).join("")}</ul>`);
+      });
+      const unm = R.pairs.filter(pr => !R.mark[R.pk(...pr)]);
+      st.push(`<b>Round ${R.rounds.length} — no new marks, stop.</b> Unmarked pairs are equivalent:
+    ${unm.length ? unm.map(pr => `<code>${pairStr(pr)}</code>`).join(" ") : "<i>none — the DFA is already minimal</i>"}.
+    Merging them gives <b>${R.classes.length}</b> state(s): ${R.classes.map(c => `<code>{${c.map(esc).join(",")}}</code>`).join(" ")}.`);
+      return st;
+    }
+    function subsetSteps(R, m) {
+      const st = [];
+      st.push(R.eps
+        ? `<b>Start state.</b> DFA start = ε-closure(<code>${esc(m.start)}</code>) = <code>${esc(R.start)}</code>.`
+        : `<b>Start state.</b> DFA start = <code>{${esc(m.start)}}</code>.`);
+      for (const s of R.steps) {
+        st.push(R.eps
+          ? `δ'(<code>${esc(s.from)}</code>, ${esc(s.a)}) = ε-closure(move = <code>${esc(s.move)}</code>) = <code>${esc(s.to)}</code>${s.isNew ? `<span class="badge new">NEW STATE</span>` : `<span class="badge old">seen</span>`}`
+          : `δ'(<code>${esc(s.from)}</code>, ${esc(s.a)}) = ⋃ δ(q, ${esc(s.a)}) for q ∈ ${esc(s.from)} = <code>${esc(s.to)}</code>${s.isNew ? `<span class="badge new">NEW STATE</span>` : `<span class="badge old">seen</span>`}`);
+      }
+      st.push(`<b>Done.</b> No unprocessed subsets remain. Final states are subsets containing an NFA final state: <code>${sortSet(R.M, R.M.finals).map(esc).join(", ") || "none"}</code>.`);
+      return st;
+    }
+    function triHTML(R, vis) {
+      const Q = R.D.states;
+      if (Q.length < 2) return `<div class="empty">Need at least two reachable states.</div>`;
+      const done = vis >= R.rounds.length + 2;
+      let h = `<table class="tri">`;
+      for (let i = 1; i < Q.length; i++) {
+        h += `<tr><th>${esc(Q[i])}</th>`;
+        for (let j = 0; j < Q.length - 1; j++) {
+          if (j >= i) { h += `<td class="blank"></td>`; continue; }
+          const mk = R.mark[R.pk(Q[j], Q[i])];
+          if (mk && vis >= mk.r + 2) h += `<td class="x" style="background:var(--r${Math.min(mk.r, 5)})" title="${esc(mk.why)}">✕<sub>${mk.r}</sub></td>`;
+          else if (!mk && done) h += `<td class="eq" title="Equivalent">≡</td>`;
+          else h += `<td></td>`;
+        }
+        h += `</tr>`;
+      }
+      h += `<tr><th></th>${Q.slice(0, -1).map(s => `<th>${esc(s)}</th>`).join("")}</tr></table>`;
+      h += `<div class="legend">${R.rounds.map((_, r) => `<span><i style="background:var(--r${Math.min(r, 5)})"></i>marked in round ${r}</span>`).join("")}<span><i style="border:1px solid var(--ok)"></i>≡ equivalent</span></div>`;
+      return h;
+    }
+    function testsHTML(t, T, mode) {
+      const m = t.m, M = t._out;
+      const items = t.tests.split(",").map(s => s.trim());
+      const rows = items.map((s, i) => {
+        const tk = tokenize(s, m.alphabet);
+        const a = simulate(m, mode === "enfa", tk);
+        const b = M ? simulate(M, false, tk) : null;
+        const disp = tk.length ? esc(tk.join(m.alphabet.every(x => x.length === 1) ? "" : " ")) : "ε";
+        const res = r => r ? (r.err ? `<span class="res-bad">${esc(r.err)}</span>` : r.ok ? `<span class="res-ok">✓ Accept</span>` : `<span class="res-bad">✕ Reject</span>`) : "—";
+        const match = b && !a.err ? (a.ok === b.ok ? `<span class="res-ok">✓</span>` : `<span class="res-bad">✕</span>`) : "—";
+        return `<tr><td>${i + 1}</td><td><b>${disp}</b></td><td>${res(a)}<div class="trace">${a.trace.map(esc).join(" → ")}</div></td>
+      <td>${res(b)}<div class="trace">${b ? b.trace.map(esc).join(" → ") : ""}</div></td><td>${match}</td></tr>`;
+      }).join("");
+      return `<div class="row"><input id="inTests" value="${esc(t.tests)}" onkeydown="if(event.key==='Enter')act('runTests')"><button class="btn pri" data-act="runTests">Run tests</button></div>
+    <p class="hint">Comma-separated input strings. Use ε for the empty string. With multi-character symbols, separate symbols by spaces.</p>
+    <div class="tblwrap" style="margin-top:12px"><table class="tbl"><thead><tr><th>#</th><th>Input</th><th>${T.inName} (trace)</th><th>${T.outName} (trace)</th><th>Same?</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    }
+    const THEORY = {
+      min: `<details><summary>How DFA minimization works</summary><ol>
+    <li><b>Remove unreachable states</b> — states that cannot be reached from q₀ never affect the language.</li>
+    <li><b>Complete the DFA</b> — if some δ(q, a) is missing, add a dead (trap) state ∅.</li>
+    <li><b>Round 0:</b> mark every pair (p, q) where one is final and the other is not — they are distinguishable by ε.</li>
+    <li><b>Round k:</b> mark (p, q) if for some symbol a the pair (δ(p,a), δ(q,a)) is already marked.</li>
+    <li>Repeat until a round marks nothing. <b>Unmarked pairs are equivalent</b> (Myhill–Nerode); merge them into one state.</li>
+    <li><b>Cross-check:</b> partition refinement starts from {F, Q−F} and keeps splitting groups whose states move to different groups; it must give the same classes.</li>
+  </ol></details>`,
+      nfa: `<details><summary>How subset construction works</summary><ol>
+    <li>Each DFA state is a <b>set of NFA states</b>. The DFA start state is {q₀}.</li>
+    <li>For a DFA state S and symbol a: δ'(S, a) = ⋃ δ(q, a) for all q ∈ S.</li>
+    <li>Every new subset found is added to a queue and processed the same way; only <b>reachable</b> subsets are built (at most 2<sup>|Q|</sup>).</li>
+    <li>The empty set ∅ acts as the dead state.</li>
+    <li>A DFA state is <b>final</b> if it contains at least one NFA final state.</li>
+  </ol></details>`,
+      enfa: `<details><summary>How ε-NFA → DFA conversion works</summary><ol>
+    <li><b>ε-closure(q)</b> = all states reachable from q using only ε-moves (including q itself).</li>
+    <li>The DFA start state is ε-closure(q₀).</li>
+    <li>For a DFA state S and symbol a: δ'(S, a) = ε-closure( ⋃ δ(q, a) for q ∈ S ).</li>
+    <li>Process every new subset until none remain; ∅ is the dead state.</li>
+    <li>A DFA state is <b>final</b> if it contains at least one ε-NFA final state.</li>
+  </ol></details>`
+    };
+
+    /* ---------------- Render ---------------- */
+    const main = document.getElementById("main");
+    function render(focus) {
+      const id = cur, t = S[id], T = TOOLS[id], m = t.m, mode = T.mode;
+      const R = mode === "dfa" ? minimize(m) : subset(m, mode === "enfa");
+      t._out = R ? R.M : null;
+      const steps = R ? (mode === "dfa" ? minSteps(R) : subsetSteps(R, m)) : [];
+      t._n = steps.length;
+      const vis = Math.min(t.step, steps.length);
+
+      let stats = "";
+      if (R && mode === "dfa") stats = `<div class="stats">
+      <div class="stat"><b>${m.states.length}</b><small>original states</small></div><div class="stat arrow">→</div>
+      <div class="stat"><b>${R.D.states.length - (R.D.trap ? 1 : 0)}</b><small>reachable</small></div><div class="stat arrow">→</div>
+      <div class="stat"><b style="color:var(--acc)">${R.M.states.length}</b><small>minimal states</small></div></div>`;
+      else if (R) stats = `<div class="stats">
+      <div class="stat"><b>${m.states.length}</b><small>${T.inName} states</small></div><div class="stat arrow">→</div>
+      <div class="stat"><b style="color:var(--acc)">${R.M.states.length}</b><small>DFA states (reachable)</small></div>
+      <div class="stat"><b>${2 ** m.states.length}</b><small>max possible subsets 2<sup>n</sup></small></div></div>`;
+
+      let extra = "";
+      if (R && mode === "dfa") {
+        extra = `<div class="grid g2">
+      <section class="card"><div class="card-h"><h2><span class="num">4</span>Table-filling (state pairs)</h2></div>${triHTML(R, vis)}
+        <p class="hint" style="text-align:center">Hover a ✕ to see why the pair is distinguishable. Use the stepper above to fill the table round by round.</p></section>
+      <section class="card"><div class="card-h"><h2><span class="num">5</span>Partition refinement cross-check</h2>
+        <span class="msg ${R.agree ? "ok" : "err"}" style="margin:0">${R.agree ? "✓ Same classes as table-filling" : "✕ Mismatch"}</span></div>
+        ${R.prounds.map((P, i) => `<div class="prow"><span class="pl">P${i}</span>${P.map(g => `<span class="pg">{${g.map(esc).join(", ")}}</span>`).join("")}</div>`).join("")}
+        <h3>Equivalence classes</h3>
+        <div class="classes">${R.classes.map(c => `<span class="cls${c.length > 1 ? " merged" : ""}">{${c.map(esc).join(", ")}}${c.length > 1 ? " — merged" : ""}</span>`).join("")}</div>
+      </section></div>`;
+      } else if (R && mode === "enfa") {
+        extra = `<section class="card"><div class="card-h"><h2><span class="num">4</span>ε-closures</h2></div>
+      <div class="tblwrap"><table class="tbl"><thead><tr><th>State q</th><th>ε-closure(q)</th></tr></thead><tbody>
+      ${R.closures.map(([s, c]) => `<tr><th>${esc(s)}</th><td>${esc(c)}</td></tr>`).join("")}</tbody></table></div></section>`;
+      }
+
+      main.innerHTML = `
+  <header class="top">
+    <div><div class="eyebrow">Simulator ${T.no} · Automata Theory &amp; Computability</div><h1>${T.title}</h1><p>${T.desc}</p></div>
+    <div class="top-actions"><button class="btn" data-act="example">Load example</button><button class="btn" data-act="clear">Clear</button></div>
+  </header>
+  <div class="grid g2">
+    ${builderHTML(t, mode, T)}
+    <section class="card">
+      <div class="card-h"><h2><span class="num">2</span>${T.inName} definition</h2><span class="pill">5-tuple (Q, Σ, δ, q₀, F)</span></div>
+      ${defHTML(m, mode)}
+      <h3>Transition table</h3>${tableHTML(m, mode)}
+    </section>
+  </div>
+  ${R ? `
+  <section class="card">
+    <div class="card-h"><h2><span class="num">3</span>Step-by-step construction</h2>${stepperHTML(steps.length, vis)}</div>
+    ${stats}<div style="height:14px"></div>
+    ${stepsList(steps, vis)}
+  </section>
+  ${extra}
+  <div class="grid g2">
+    <section class="card"><div class="card-h"><h2><span class="num">${mode === "dfa" ? 6 : 5}</span>${T.outName}</h2><span class="pill">${R.M.states.length} states</span></div>
+      ${defHTML(R.M, "dfa")}<h3>Transition table</h3>${tableHTML(R.M, "dfa")}</section>
+    <section class="card"><div class="card-h"><h2><span class="num">${mode === "dfa" ? 7 : 6}</span>Test strings</h2></div>${testsHTML(t, T, mode)}</section>
+  </div>` : `<section class="card"><div class="empty">Add at least one state (set as start) and one alphabet symbol to run the construction.</div></section>`}
+  <section class="card">
+    <div class="card-h"><h2>State diagrams</h2><span class="hint" style="margin:0">Drag states to rearrange</span></div>
+    <div class="grid g2" style="margin:0">
+      <div><div class="card-h"><h3 style="margin:0">Input ${T.inName}</h3><button class="btn sm" data-act="layoutIn">Auto layout</button></div>${graphSVG(t, "in", m)}</div>
+      <div><div class="card-h"><h3 style="margin:0">${T.outName}</h3><button class="btn sm" data-act="layoutOut">Auto layout</button></div>${graphSVG(t, "out", t._out)}</div>
+    </div>
+  </section>
+  ${THEORY[id]}`;
+
+      document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("active", b.dataset.tool === id));
+      if (focus) document.getElementById(focus)?.focus();
+    }
+
+    /* ---------------- Actions ---------------- */
+    function flash(text) { S[cur].msg = { type: "err", text }; render(); }
+    function act(a, el) {
+      const t = S[cur], m = t.m, mode = TOOLS[cur].mode;
+      const val = id => (document.getElementById(id)?.value || "").trim();
+      t.msg = null;
+      let focus = null, changed = true;
+      switch (a) {
+        case "addState": {
+          const n = val("inState");
+          if (!n) return flash("Enter a state name.");
+          if (/[,{}\s|]/.test(n) || n === "∅") return flash("State names cannot contain spaces, commas, braces or |.");
+          if (m.states.includes(n)) return flash(`State “${n}” already exists.`);
+          m.states.push(n); if (!m.start) m.start = n; focus = "inState"; break;
+        }
+        case "delState": {
+          const n = el.dataset.v;
+          m.states = m.states.filter(s => s !== n); m.finals.delete(n);
+          for (const k in m.trans) {
+            const [p] = k.split(SEP);
+            if (p === n) { delete m.trans[k]; continue; }
+            m.trans[k].delete(n); if (!m.trans[k].size) delete m.trans[k];
+          }
+          if (m.start === n) m.start = m.states[0] || null; break;
+        }
+        case "toggleFinal": { const n = el.dataset.v; m.finals.has(n) ? m.finals.delete(n) : m.finals.add(n); break; }
+        case "setStart": m.start = el.dataset.v; break;
+        case "addSym": {
+          const s = val("inSym");
+          if (!s) return flash("Enter a symbol.");
+          if (s === EPS || /^(e|eps|epsilon)$/i.test(s)) return flash(mode === "enfa" ? "ε is built in — pick it from the transition symbol list." : "ε-moves are only allowed in the ε-NFA simulator.");
+          if (/[,\s]/.test(s)) return flash("Symbols cannot contain spaces or commas.");
+          if (m.alphabet.includes(s)) return flash(`Symbol “${s}” already exists.`);
+          m.alphabet.push(s); focus = "inSym"; break;
+        }
+        case "delSym": {
+          const s = el.dataset.v; m.alphabet = m.alphabet.filter(x => x !== s);
+          for (const k in m.trans) if (k.split(SEP)[1] === s) delete m.trans[k]; break;
+        }
+        case "addTrans": {
+          const p = val("trFrom"), sy = val("trSym"), q = val("trTo");
+          if (!p || !sy || !q) return flash("Add states and alphabet symbols first.");
+          t.sel = { from: p, sym: sy, to: q };
+          const k = K(p, sy);
+          if (mode === "dfa") {
+            const old = m.trans[k] && [...m.trans[k]][0];
+            m.trans[k] = new Set([q]);
+            if (old && old !== q) t.msg = { type: "warn", text: `A DFA allows only one move per (state, symbol): δ(${p}, ${sy}) changed from ${old} to ${q}.` };
+          } else (m.trans[k] ??= new Set()).add(q);
+          break;
+        }
+        case "delTrans": {
+          const [p, sy, q] = el.dataset.v.split(SEP), k = K(p, sy);
+          m.trans[k]?.delete(q); if (m.trans[k] && !m.trans[k].size) delete m.trans[k]; break;
+        }
+        case "example": t.m = EX[cur](); t.pos = {}; t.tests = TESTS[cur]; t.sel = {}; break;
+        case "clear": t.m = { states: [], alphabet: [], start: null, finals: new Set(), trans: {} }; t.pos = {}; t.sel = {}; break;
+        case "stepReset": t.step = 0; changed = false; break;
+        case "stepPrev": t.step = Math.max(0, Math.min(t.step, t._n) - 1); changed = false; break;
+        case "stepNext": t.step = Math.min(t._n, Math.min(t.step, t._n) === t._n ? t._n : t.step + 1); changed = false; break;
+        case "stepAll": t.step = Infinity; changed = false; break;
+        case "layoutIn": delete t.pos.in; changed = false; break;
+        case "layoutOut": delete t.pos.out; changed = false; break;
+        case "runTests": t.tests = val("inTests"); changed = false; focus = "inTests"; break;
+      }
+      if (changed) t.step = Infinity;
+      render(focus);
+    }
+    main.addEventListener("click", e => { const b = e.target.closest("[data-act]"); if (b) act(b.dataset.act, b); });
+    document.getElementById("nav").addEventListener("click", e => {
+      const b = e.target.closest("[data-tool]"); if (!b) return;
+      cur = b.dataset.tool; render(); window.scrollTo({ top: 0 });
+    });
+    const themeBtn = document.getElementById("themeBtn");
+    themeBtn.addEventListener("click", () => {
+      const r = document.documentElement, light = r.dataset.theme !== "light";
+      r.dataset.theme = light ? "light" : "dark";
+      themeBtn.textContent = light ? "☾ Dark mode" : "☀ Light mode";
+    });
+    render();
+  </script>
+</body>
+
+</html>
